@@ -1,10 +1,23 @@
 const express = require('express');
 const cors = require('cors');
 const { PrismaClient } = require('@prisma/client');
+const compression = require('compression');
 require('dotenv').config();
 
 const app = express();
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  log: ['error'],
+  // Aumentando conexões com o banco de dados
+  connection: {
+    pool: {
+      min: 3,
+      max: 10
+    }
+  }
+});
+
+// Compressão para reduzir tamanho das respostas
+app.use(compression());
 
 // Configuração do CORS
 app.use(cors({
@@ -14,6 +27,9 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+// Cache para resposta estáticas
+const cacheTime = 60 * 5; // 5 minutos
 
 // Rota para favicon.ico
 app.get('/favicon.ico', (req, res) => {
@@ -36,8 +52,6 @@ app.get('/api/pedidos', async (req, res) => {
       dataFinal,
       arquivado = false 
     } = req.query;
-
-    console.log("Requisição recebida:", req.query);
 
     const skip = (page - 1) * limit;
     
@@ -67,8 +81,6 @@ app.get('/api/pedidos', async (req, res) => {
       delete where.dataPreenchimento;
     }
 
-    console.log("Consulta:", JSON.stringify(where));
-
     const [pedidos, total] = await Promise.all([
       prisma.pedido.findMany({
         where,
@@ -79,6 +91,7 @@ app.get('/api/pedidos', async (req, res) => {
       prisma.pedido.count({ where })
     ]);
 
+    res.set('Cache-Control', `public, max-age=${cacheTime}`);
     res.json({
       pedidos,
       total,
@@ -92,12 +105,9 @@ app.get('/api/pedidos', async (req, res) => {
 
 app.post('/api/pedidos', async (req, res) => {
   try {
-    console.log('Recebendo requisição para criar pedido:', JSON.stringify(req.body, null, 2));
-    
     // Verificar se todos os campos obrigatórios estão presentes
     const { nomeItem, quantidade, solicitante } = req.body;
     if (!nomeItem || quantidade === undefined || !solicitante) {
-      console.error('Campos obrigatórios faltando:', { nomeItem, quantidade, solicitante });
       return res.status(400).json({ error: 'Campos obrigatórios faltando' });
     }
     
@@ -121,16 +131,13 @@ app.post('/api/pedidos', async (req, res) => {
       updatedAt: new Date()
     };
     
-    console.log('Dados formatados para criação:', dadosFormatados);
-    
     const pedido = await prisma.pedido.create({
       data: dadosFormatados
     });
     
-    console.log('Pedido criado com sucesso:', pedido);
     res.status(201).json(pedido);
   } catch (error) {
-    console.error('Erro detalhado ao criar pedido:', error);
+    console.error('Erro ao criar pedido:', error);
     res.status(500).json({ error: `Erro ao criar pedido: ${error.message}` });
   }
 });
@@ -202,6 +209,7 @@ app.get('/api/configuracoes', async (req, res) => {
         }
       });
     }
+    res.set('Cache-Control', `public, max-age=${cacheTime}`);
     res.json(config);
   } catch (error) {
     console.error(error);
