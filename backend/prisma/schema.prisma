@@ -1,0 +1,35 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model configuracao {
+  id               Int      @id @default(autoincrement())
+  diasParaArquivar Int      @default(30)
+  itensPorPagina   Int      @default(10)
+  updatedAt        DateTime
+}
+
+model pedido {
+  id                Int       @id @default(autoincrement())
+  nomeItem          String
+  quantidade        Int
+  solicitante       String
+  fornecedor        String    @db.Text
+  motivo            String?
+  status            String    @default("A Solicitar")
+  dataPreenchimento DateTime  @default(now())
+  dataSolicitacao   DateTime?
+  dataBaixa         DateTime?
+  ativo             Boolean   @default(true)
+  arquivado         Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime
+
+  @@index([dataPreenchimento], map: "Pedido_dataPreenchimento_idx")
+  @@index([status, ativo, arquivado], map: "Pedido_status_ativo_arquivado_idx")
+}
