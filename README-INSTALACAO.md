@@ -17,6 +17,7 @@ Este guia apresenta os passos necessários para instalar e configurar o Sistema 
 1. Clone ou extraia os arquivos do sistema para uma pasta de sua preferência
 2. Certifique-se de que o MySQL está instalado e configurado na porta 3307
 3. Verifique se sua máquina está na faixa de IP 192.168.5.x
+4. Certifique-se de que o banco de dados `sistema_pedidos` existe no MySQL
 
 ### 2. Configuração do Sistema
 
@@ -80,7 +81,7 @@ Certifique-se de que as seguintes portas estão liberadas no firewall:
 Se encontrar problemas com o banco de dados, verifique:
 1. Se o MySQL está rodando na porta 3307
 2. Se o usuário `root` com senha `root` tem permissões adequadas
-3. Se o banco de dados `sistema-pedidos2` foi criado corretamente
+3. Se o banco de dados `sistema_pedidos` já existe e está acessível
 
 ### Problemas de Acesso na Rede
 

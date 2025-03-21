@@ -11,7 +11,7 @@ echo IP configurado: %IP%
 :: Atualizando as configurações do backend
 echo.
 echo [1/3] Atualizando configuracoes do banco de dados...
-echo DATABASE_URL="mysql://root:root@localhost:3307/sistema-pedidos2" > backend\.env
+echo DATABASE_URL="mysql://root:root@localhost:3307/sistema_pedidos" > backend\.env
 echo CORS_ORIGIN="*" >> backend\.env
 echo PORT=8081 >> backend\.env
 echo HOST="0.0.0.0" >> backend\.env
@@ -131,7 +131,7 @@ echo Configuracoes do MySQL: >> informacoes-acesso.txt
 echo - Usuario: root >> informacoes-acesso.txt
 echo - Senha: root >> informacoes-acesso.txt
 echo - Porta: 3307 >> informacoes-acesso.txt
-echo - Banco de dados: sistema-pedidos2 >> informacoes-acesso.txt
+echo - Banco de dados: sistema_pedidos >> informacoes-acesso.txt
 echo. >> informacoes-acesso.txt
 echo IMPORTANTE: Para acessar o sistema de outras maquinas da rede: >> informacoes-acesso.txt
 echo - Verifique se o firewall esta configurado para permitir >> informacoes-acesso.txt

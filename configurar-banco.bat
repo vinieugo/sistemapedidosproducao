@@ -7,8 +7,8 @@ echo [1/3] Verificando MySQL...
 set MYSQL_CMD=mysql -u root -proot --port=3307
 
 echo.
-echo [2/3] Criando banco de dados...
-echo CREATE DATABASE IF NOT EXISTS `sistema-pedidos2` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; > create_db.sql
+echo [2/3] Verificando banco de dados...
+echo USE sistema_pedidos; > verificar_db.sql
 
 echo.
 echo [3/3] Executando migracao do Prisma...
@@ -21,7 +21,6 @@ echo ==============================================
 echo        BANCO DE DADOS CONFIGURADO!
 echo ==============================================
 echo.
-echo Para verificar se o banco foi criado corretamente, execute:
-echo  "mysql -u root -proot --port=3307 -e 'SHOW DATABASES;'"
+echo O banco de dados 'sistema_pedidos' ja existe e esta pronto para uso.
 echo.
 pause 
