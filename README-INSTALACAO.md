@@ -21,19 +21,46 @@ Este guia apresenta os passos necessários para instalar e configurar o Sistema 
 
 ### 2. Configuração do Sistema
 
-Execute os scripts na seguinte ordem:
+Você tem duas opções para configurar e iniciar o sistema:
 
-1. **configurar-rede.bat** - Este script configura as definições de rede e adapta o sistema para seu ambiente
+#### Opção 1: Inicialização Completa (Recomendada)
+
+Execute o script de inicialização completa como administrador:
+```
+iniciar-completo.bat
+```
+
+Este script fará todo o processo de configuração, incluindo:
+- Instalação de dependências
+- Build do frontend
+- Configuração do banco de dados
+- Configuração de inicialização automática
+- Inicialização do sistema
+
+#### Opção 2: Configuração Passo a Passo
+
+Se preferir fazer a configuração passo a passo, execute os scripts nesta ordem:
+
+1. **configurar-rede.bat** - Configura as definições de rede
    ```
    configurar-rede.bat
    ```
 
-2. **configurar-banco.bat** - Este script configura o banco de dados necessário
+2. **configurar-banco.bat** - Configura o banco de dados
    ```
    configurar-banco.bat
    ```
 
-### 3. Inicialização do Sistema
+3. **iniciar-startup.bat** OU **iniciar-servico-windows.bat** - Configura a inicialização automática
+   ```
+   iniciar-startup.bat
+   ```
+   ou
+   ```
+   iniciar-servico-windows.bat
+   ```
+
+### 3. Opções de Inicialização do Sistema
 
 Você tem três opções para iniciar o sistema:
 
@@ -51,6 +78,31 @@ Você tem três opções para iniciar o sistema:
    ```
    iniciar-pm2-config.bat
    ```
+
+## Inicialização Automática
+
+O sistema pode ser configurado para iniciar automaticamente de duas formas:
+
+### Método 1: PM2 e Agendador de Tarefas
+
+Este método usa PM2 em conjunto com o Agendador de Tarefas do Windows:
+```
+iniciar-startup.bat
+```
+
+### Método 2: Serviços do Windows
+
+Este método configura o frontend e backend como serviços do Windows usando NSSM:
+```
+iniciar-servico-windows.bat
+```
+
+### Método 3: Inicialização Completa
+
+Para configurar tudo de uma vez, incluindo a inicialização automática:
+```
+iniciar-completo.bat
+```
 
 ## Acessando o Sistema
 
@@ -90,9 +142,18 @@ Se outras máquinas não conseguirem acessar o sistema:
 2. Teste se o servidor está acessível fazendo ping para 192.168.5.3
 3. Verifique as configurações de firewall da máquina e da rede
 
-### Reinicio do Sistema
+### Problemas com Inicialização Automática
 
-Para reiniciar o sistema após alterações, execute novamente um dos scripts de inicialização.
+Se o sistema não iniciar automaticamente:
+
+1. **Método PM2:**
+   - Verifique se o PM2 está instalado globalmente: `npm list -g | findstr pm2`
+   - Execute `pm2 startup` e `pm2 save` manualmente
+   - Verifique se a tarefa "SistemaPedidos" existe no Agendador de Tarefas do Windows
+
+2. **Método Serviços:**
+   - Verifique no Gerenciador de Serviços do Windows (services.msc) se os serviços "SistemaPedidos-Frontend" e "SistemaPedidos-Backend" estão presentes
+   - Verifique os logs em `logs/frontend-stdout.log` e `logs/backend-stderr.log`
 
 ### Monitoramento com PM2
 
