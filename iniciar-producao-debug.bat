@@ -8,20 +8,45 @@ cd /d "C:\Users\app\Documents\Sistema-Pedidos\sistemapedidosproducao-main"
 
 echo Diretorio atual: %CD%
 
-REM Verifica problemas com o backend
-echo Verificando logs do backend...
-if exist "logs\backend-error.log" (
-    echo --- Últimas 50 linhas do log de erro do backend ---
-    type logs\backend-error.log | findstr /n "." | findstr /r "^[1-9][0-9][0-9]:" > nul 2>&1
-    if !errorlevel! equ 0 (
-        for /f "skip=100 delims=" %%i in (logs\backend-error.log) do echo %%i
-    ) else (
-        type logs\backend-error.log
-    )
+REM Corrigindo problemas de instalação do backend
+echo Verificando dependencias do backend...
+cd backend
+echo.
+echo ========================================================
+echo REINSTALANDO DEPENDENCIAS DO BACKEND...
+echo ========================================================
+
+REM Verifica se o node_modules existe e remove
+if exist "node_modules" (
+    echo Removendo node_modules anterior...
+    rmdir /s /q node_modules
+)
+
+REM Verifica se o package-lock.json existe e remove
+if exist "package-lock.json" (
+    echo Removendo package-lock.json anterior...
+    del /f /q package-lock.json
+)
+
+echo Instalando dependencias do backend com npm...
+call npm install express cors dotenv mysql2 @prisma/client
+if %errorlevel% neq 0 (
+    echo Erro ao instalar dependencias principais do backend
+    cd ..
+    pause
+    exit /b 1
+)
+
+echo Instalando dependencias de desenvolvimento do backend...
+call npm install --save-dev nodemon prisma
+if %errorlevel% neq 0 (
+    echo Erro ao instalar dependencias de desenvolvimento do backend
+    cd ..
+    pause
+    exit /b 1
 )
 
 REM Verifica se o .env do backend existe
-cd backend
 echo.
 echo Verificando arquivo .env do backend...
 if exist ".env" (
