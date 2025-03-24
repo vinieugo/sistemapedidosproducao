@@ -12,7 +12,7 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 5173,
-        HOST: '0.0.0.0',
+        HOST: '192.168.5.3',
         NODE_TLS_REJECT_UNAUTHORIZED: '0'
       },
       error_file: './logs/frontend-error.log',
@@ -31,7 +31,7 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 8081,
-        HOST: '0.0.0.0',
+        HOST: '192.168.5.3',
         NODE_TLS_REJECT_UNAUTHORIZED: '0'
       },
       error_file: './logs/backend-error.log',

@@ -46,8 +46,8 @@ echo.
 echo ==============================================
 echo        SISTEMA INICIADO COM SUCESSO!
 echo ==============================================
-echo Frontend: http://localhost:5173
-echo Backend: http://localhost:8081
+echo Frontend: http://192.168.5.3:5173
+echo Backend: http://192.168.5.3:8081
 echo.
 echo Para monitorar os servicos, execute: pm2 monit
 echo Para encerrar os servicos, execute: pm2 stop all
