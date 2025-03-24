@@ -36,6 +36,24 @@ if exist ".env" (
 )
 cd ..
 
+REM Ajusta o arquivo vite.config.js para usar o endereço correto da API
+echo Corrigindo configuração do Vite...
+echo import { defineConfig } from 'vite';> vite.config.js
+echo export default defineConfig({>> vite.config.js
+echo   server: {>> vite.config.js
+echo     host: '0.0.0.0',>> vite.config.js
+echo     port: 5173>> vite.config.js
+echo   },>> vite.config.js
+echo   preview: {>> vite.config.js
+echo     host: '0.0.0.0',>> vite.config.js
+echo     port: 5173>> vite.config.js
+echo   },>> vite.config.js
+echo   define: {>> vite.config.js
+echo     'process.env.VITE_API_URL': JSON.stringify('http://192.168.5.3:8081/api')>> vite.config.js
+echo   }>> vite.config.js
+echo });>> vite.config.js
+echo Arquivo vite.config.js atualizado.
+
 REM Atualiza o arquivo ecosystem.config.cjs para incluir mais logs
 echo Criando arquivo de configuracao do PM2 com mais logs...
 echo module.exports = {> ecosystem.config.cjs
@@ -49,8 +67,8 @@ echo       env: {>> ecosystem.config.cjs
 echo         NODE_ENV: 'production',>> ecosystem.config.cjs
 echo         HOST: '0.0.0.0',>> ecosystem.config.cjs
 echo         PORT: 5173,>> ecosystem.config.cjs
-echo         DEBUG: '*',>> ecosystem.config.cjs
-echo         VITE_API_URL: 'http://192.168.5.3:8081/api'>> ecosystem.config.cjs
+echo         VITE_API_URL: 'http://192.168.5.3:8081/api',>> ecosystem.config.cjs
+echo         DEBUG: '*'>> ecosystem.config.cjs
 echo       },>> ecosystem.config.cjs
 echo       log_date_format: 'YYYY-MM-DD HH:mm:ss',>> ecosystem.config.cjs
 echo       merge_logs: true,>> ecosystem.config.cjs
@@ -89,26 +107,22 @@ echo     }>> ecosystem.config.cjs
 echo   ]>> ecosystem.config.cjs
 echo };>> ecosystem.config.cjs
 
-REM Ajusta o arquivo vite.config.js para usar o endereço correto da API
-echo Verificando configuração do Vite...
-if exist "vite.config.js" (
-    echo // Arquivo de configuração do Vite> vite.config.temp.js
-    echo import { defineConfig } from 'vite';>> vite.config.temp.js
-    echo export default defineConfig({>> vite.config.temp.js
-    echo   server: {>> vite.config.temp.js
-    echo     host: '0.0.0.0',>> vite.config.temp.js
-    echo     port: 5173,>> vite.config.temp.js
-    echo   },>> vite.config.temp.js
-    echo   preview: {>> vite.config.temp.js
-    echo     host: '0.0.0.0',>> vite.config.temp.js
-    echo     port: 5173,>> vite.config.temp.js
-    echo   },>> vite.config.temp.js
-    echo   define: {>> vite.config.temp.js
-    echo     'process.env.VITE_API_URL': JSON.stringify('http://192.168.5.3:8081/api'),>> vite.config.temp.js
-    echo   }>> vite.config.temp.js
-    echo });>> vite.config.temp.js
-    move /y vite.config.temp.js vite.config.js
-    echo Arquivo vite.config.js atualizado.
+REM Instalando dependências do frontend
+echo Instalando dependências do frontend...
+call npm install
+if %errorlevel% neq 0 (
+    echo Erro ao instalar dependências do frontend
+    pause
+    exit /b 1
+)
+
+REM Compilando o frontend
+echo Compilando o frontend para produção...
+call npm run build
+if %errorlevel% neq 0 (
+    echo Erro ao compilar o frontend
+    pause
+    exit /b 1
 )
 
 REM Cria diretório de logs se não existir
@@ -131,6 +145,9 @@ if %errorlevel% neq 0 (
 
 echo.
 echo Sistema iniciado em modo DEBUG
+echo.
+echo Frontend: http://192.168.5.3:5173
+echo Backend: http://192.168.5.3:8081
 echo.
 echo Para ver os logs em tempo real do backend: pm2 logs sistema-pedidos-backend
 echo.

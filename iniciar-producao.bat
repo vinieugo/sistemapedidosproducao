@@ -21,6 +21,23 @@ if not exist "backend" (
     exit /b 1
 )
 
+REM Ajusta o arquivo vite.config.js para usar o endereço correto da API
+echo Atualizando vite.config.js...
+echo import { defineConfig } from 'vite';> vite.config.js
+echo export default defineConfig({>> vite.config.js
+echo   server: {>> vite.config.js
+echo     host: '0.0.0.0',>> vite.config.js
+echo     port: 5173>> vite.config.js
+echo   },>> vite.config.js
+echo   preview: {>> vite.config.js
+echo     host: '0.0.0.0',>> vite.config.js
+echo     port: 5173>> vite.config.js
+echo   },>> vite.config.js
+echo   define: {>> vite.config.js
+echo     'process.env.VITE_API_URL': JSON.stringify('http://192.168.5.3:8081/api')>> vite.config.js
+echo   }>> vite.config.js
+echo });>> vite.config.js
+
 REM Instala dependencias do frontend (que está na raiz)
 echo Instalando dependencias do frontend...
 if not exist "package.json" (
@@ -77,6 +94,7 @@ echo       env: {>> ecosystem.config.cjs
 echo         NODE_ENV: 'production',>> ecosystem.config.cjs
 echo         HOST: '0.0.0.0',>> ecosystem.config.cjs
 echo         PORT: 5173,>> ecosystem.config.cjs
+echo         VITE_API_URL: 'http://192.168.5.3:8081/api',>> ecosystem.config.cjs
 echo         DEBUG: '*'>> ecosystem.config.cjs
 echo       },>> ecosystem.config.cjs
 echo       log_date_format: 'YYYY-MM-DD HH:mm:ss',>> ecosystem.config.cjs
