@@ -1,92 +1,120 @@
 @echo off
-echo ======================================================
-echo  INICIANDO SISTEMA DE PEDIDOS COM PM2 (CONFIG)
-echo ======================================================
+echo Iniciando configuracao do sistema...
 
-:: Obtendo o IP da máquina
-for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /i "IPv4"') do (
-    set "IP=%%a"
-    set "IP=!IP:~1!"
-    goto :found_ip
-)
-:found_ip
-
-:: Verificacao do Node.js
+REM Verifica se o Node.js esta instalado
 where node >nul 2>nul
-if %ERRORLEVEL% NEQ 0 (
-    echo [ERRO] Node.js nao encontrado. Por favor, instale o Node.js primeiro.
+if %errorlevel% neq 0 (
+    echo Node.js nao encontrado. Por favor, instale o Node.js primeiro.
     pause
     exit /b 1
 )
 
-:: Verificacao do npm
+REM Verifica se o npm esta instalado
 where npm >nul 2>nul
-if %ERRORLEVEL% NEQ 0 (
-    echo [ERRO] npm nao encontrado. Por favor, instale o npm primeiro.
+if %errorlevel% neq 0 (
+    echo npm nao encontrado. Por favor, instale o npm primeiro.
     pause
     exit /b 1
 )
 
-:: Instalacao de dependencias do frontend
-echo [1/5] Instalando dependencias do frontend...
+REM Instala dependencias do frontend
+echo Instalando dependencias do frontend...
+cd frontend
 call npm install
+if %errorlevel% neq 0 (
+    echo Erro ao instalar dependencias do frontend
+    pause
+    exit /b 1
+)
 
-:: Construcao do frontend para producao
-echo [2/5] Construindo frontend para producao...
-call npm run build
-
-:: Instalacao de dependencias do backend
-echo [3/5] Instalando dependencias do backend...
-cd backend
+REM Instala dependencias do backend
+echo Instalando dependencias do backend...
+cd ../backend
 call npm install
+if %errorlevel% neq 0 (
+    echo Erro ao instalar dependencias do backend
+    pause
+    exit /b 1
+)
+
+REM Volta para a raiz do projeto
 cd ..
 
-:: Verificacao e instalacao do PM2
-echo [4/5] Verificando instalacao do PM2...
-call npm install -g pm2
-call pm2 install pm2-windows-startup
-call pm2-startup install
+REM Verifica se o PM2 esta instalado globalmente
+echo Verificando instalacao do PM2...
+call npm list -g pm2 >nul 2>nul
+if %errorlevel% neq 0 (
+    echo Instalando PM2 globalmente...
+    call npm install -g pm2
+    if %errorlevel% neq 0 (
+        echo Erro ao instalar PM2
+        pause
+        exit /b 1
+    )
+)
 
-:: Criando pasta de logs se nao existir
+REM Instala e configura o PM2-windows-startup
+echo Configurando PM2 para iniciar com Windows...
+call npm install -g pm2-windows-startup
+if %errorlevel% neq 0 (
+    echo Erro ao instalar pm2-windows-startup
+    pause
+    exit /b 1
+)
+
+REM Cria diretorio de logs se nao existir
 if not exist "logs" mkdir logs
+if not exist "frontend\logs" mkdir frontend\logs
 if not exist "backend\logs" mkdir backend\logs
 
-:: Parando todas as instancias anteriores (se existirem)
-echo [5/5] Parando instancias anteriores...
-call pm2 stop all 2>nul
-call pm2 delete all 2>nul
-call pm2 flush
+REM Para instancias anteriores do PM2
+echo Parando instancias anteriores...
+call pm2 stop all
+call pm2 delete all
 
-:: Iniciando os serviços com PM2 usando o arquivo de configuração
-echo Iniciando servicos com PM2...
+REM Inicia os servicos com PM2
+echo Iniciando servicos...
 call pm2 start ecosystem.config.cjs
+if %errorlevel% neq 0 (
+    echo Erro ao iniciar servicos com PM2
+    pause
+    exit /b 1
+)
 
-:: Salvando a configuração do PM2
+REM Salva a configuracao do PM2
 echo Salvando configuracao do PM2...
 call pm2 save
+if %errorlevel% neq 0 (
+    echo Erro ao salvar configuracao do PM2
+    pause
+    exit /b 1
+)
 
-:: Exibindo status dos serviços
+REM Configura o PM2 para iniciar com Windows
+echo Configurando PM2 para iniciar com Windows...
+call pm2-startup install
+if %errorlevel% neq 0 (
+    echo Erro ao configurar PM2 para iniciar com Windows
+    pause
+    exit /b 1
+)
+
+REM Mostra o status dos servicos
 echo.
 echo Status dos servicos:
-call pm2 ls
-
-:: Exibindo logs em tempo real
-echo.
-echo Exibindo logs em tempo real (pressione Ctrl+C para parar):
-call pm2 logs --lines 100
+call pm2 status
 
 echo.
-echo ==============================================
-echo        SISTEMA INICIADO COM SUCESSO!
-echo ==============================================
-echo Frontend: http://%IP%:5173
-echo Backend: http://%IP%:8081
+echo Logs em tempo real (pressione Ctrl+C para parar):
+call pm2 logs
+
 echo.
-echo Para monitorar os servicos, execute: pm2 monit
-echo Para encerrar os servicos, execute: pm2 stop all
+echo Sistema iniciado com sucesso!
+echo Frontend: http://192.168.5.3:5173
+echo Backend: http://192.168.5.3:8081
 echo.
-echo Logs disponiveis em:
-echo - Frontend: ./logs/frontend-error.log e ./logs/frontend-out.log
-echo - Backend: ./logs/backend-error.log e ./logs/backend-out.log
+echo Para parar os servicos, execute: pm2 stop all
+echo Para reiniciar os servicos, execute: pm2 restart all
+echo Para ver os logs, execute: pm2 logs
 echo.
 pause 
