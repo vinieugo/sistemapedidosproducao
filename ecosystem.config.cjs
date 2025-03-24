@@ -12,7 +12,7 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 5173,
-        HOST: '192.168.5.3',
+        HOST: '0.0.0.0',
         NODE_TLS_REJECT_UNAUTHORIZED: '0',
         DEBUG: '*'
       },
@@ -35,7 +35,7 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 8081,
-        HOST: '192.168.5.3',
+        HOST: '0.0.0.0',
         NODE_TLS_REJECT_UNAUTHORIZED: '0',
         DEBUG: '*'
       },

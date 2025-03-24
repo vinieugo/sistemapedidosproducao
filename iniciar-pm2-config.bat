@@ -3,6 +3,14 @@ echo ======================================================
 echo  INICIANDO SISTEMA DE PEDIDOS COM PM2 (CONFIG)
 echo ======================================================
 
+:: Obtendo o IP da máquina
+for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /i "IPv4"') do (
+    set "IP=%%a"
+    set "IP=!IP:~1!"
+    goto :found_ip
+)
+:found_ip
+
 :: Verificacao do Node.js
 where node >nul 2>nul
 if %ERRORLEVEL% NEQ 0 (
@@ -71,8 +79,8 @@ echo.
 echo ==============================================
 echo        SISTEMA INICIADO COM SUCESSO!
 echo ==============================================
-echo Frontend: http://192.168.5.3:5173
-echo Backend: http://192.168.5.3:8081
+echo Frontend: http://%IP%:5173
+echo Backend: http://%IP%:8081
 echo.
 echo Para monitorar os servicos, execute: pm2 monit
 echo Para encerrar os servicos, execute: pm2 stop all
