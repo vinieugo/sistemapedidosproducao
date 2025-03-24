@@ -3,31 +3,77 @@ setlocal enabledelayedexpansion
 
 echo Iniciando configuracao do sistema...
 
+REM Variável para verificar se estamos no diretório correto
+set "CORRECT_DIR=false"
+
 REM Detectando a estrutura de diretórios
 if exist "frontend" (
     set "FRONTEND_DIR=frontend"
+    set "BACKEND_DIR=backend"
+    set "CORRECT_DIR=true"
 ) else if exist "sistemapedidosproducao-main\frontend" (
     set "FRONTEND_DIR=sistemapedidosproducao-main\frontend"
     set "BACKEND_DIR=sistemapedidosproducao-main\backend"
-) else (
+    set "CORRECT_DIR=true"
+)
+
+REM Verifica o diretório atual para ver se é o caso específico
+if "%CORRECT_DIR%"=="false" (
+    for %%I in ("%CD%") do set "CURRENT_DIR=%%~nxI"
+    if "%CURRENT_DIR%"=="sistemapedidosproducao-main" (
+        if exist "frontend" (
+            set "FRONTEND_DIR=frontend"
+            set "BACKEND_DIR=backend"
+            set "CORRECT_DIR=true"
+        )
+    )
+)
+
+REM Se ainda não encontrou, verifica se está na pasta superior
+if "%CORRECT_DIR%"=="false" (
+    if exist "sistemapedidosproducao-main" (
+        cd sistemapedidosproducao-main
+        if exist "frontend" (
+            set "FRONTEND_DIR=frontend"
+            set "BACKEND_DIR=backend"
+            set "CORRECT_DIR=true"
+        ) else (
+            cd ..
+        )
+    )
+)
+
+REM Se ainda não encontrou, tenta procurar por caminhos absolutos conhecidos
+if "%CORRECT_DIR%"=="false" (
+    if exist "C:\Users\app\Documents\Sistema-Pedidos\sistemapedidosproducao-main\frontend" (
+        cd "C:\Users\app\Documents\Sistema-Pedidos\sistemapedidosproducao-main"
+        set "FRONTEND_DIR=frontend"
+        set "BACKEND_DIR=backend"
+        set "CORRECT_DIR=true"
+        echo Diretório encontrado e alterado para: %CD%
+    )
+)
+
+REM Última verificação - se ainda não encontrou, exibe mensagem detalhada
+if "%CORRECT_DIR%"=="false" (
     echo Estrutura de diretórios não reconhecida!
+    echo.
+    echo Diretório atual: %CD%
+    echo.
     echo Por favor, execute este script no diretório raiz do projeto.
+    echo.
     echo Diretórios esperados:
-    echo - frontend/
-    echo - backend/
-    echo ou
-    echo - sistemapedidosproducao-main/frontend/
-    echo - sistemapedidosproducao-main/backend/
+    echo - frontend/ e backend/
+    echo - sistemapedidosproducao-main/frontend/ e sistemapedidosproducao-main/backend/
+    echo.
+    echo Se você sabe o caminho correto, edite o script e adicione o caminho completo.
+    echo.
     pause
     exit /b 1
 )
 
-REM Se BACKEND_DIR não foi definido, assume-se que estamos na raiz
-if not defined BACKEND_DIR (
-    set "BACKEND_DIR=backend"
-)
-
 echo Estrutura detectada:
+echo Diretório atual: %CD%
 echo Frontend: !FRONTEND_DIR!
 echo Backend: !BACKEND_DIR!
 
@@ -52,12 +98,15 @@ echo Instalando dependencias do frontend...
 cd !FRONTEND_DIR!
 if not exist "package.json" (
     echo Arquivo package.json nao encontrado em !FRONTEND_DIR!
+    echo Diretório atual: %CD%
+    cd ..
     pause
     exit /b 1
 )
 call npm install
 if %errorlevel% neq 0 (
     echo Erro ao instalar dependencias do frontend
+    cd ..
     pause
     exit /b 1
 )
@@ -67,15 +116,18 @@ echo Construindo frontend para producao...
 call npm run build
 if %errorlevel% neq 0 (
     echo Erro ao construir frontend
+    cd ..
     pause
     exit /b 1
 )
 
-REM Instala dependencias do backend
+REM Volta para a raiz e instala dependencias do backend
+cd ..
 echo Instalando dependencias do backend...
-cd ..\!BACKEND_DIR!
+cd !BACKEND_DIR!
 if not exist "package.json" (
     echo Arquivo package.json nao encontrado em !BACKEND_DIR!
+    echo Diretório atual: %CD%
     cd ..
     pause
     exit /b 1
