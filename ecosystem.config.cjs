@@ -2,8 +2,8 @@ module.exports = {
   apps: [
     {
       name: 'sistema-pedidos-frontend',
-      script: 'npm',
-      args: 'run preview',
+      script: 'node',
+      args: 'node_modules/vite/bin/vite.js preview',
       cwd: './',
       instances: 1,
       autorestart: true,
@@ -25,8 +25,8 @@ module.exports = {
     },
     {
       name: 'sistema-pedidos-backend',
-      script: 'npm',
-      args: 'run start',
+      script: 'node',
+      args: 'src/index.js',
       cwd: './backend',
       instances: 1,
       autorestart: true,

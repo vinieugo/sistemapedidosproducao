@@ -33,25 +33,24 @@ cd backend
 call npm install
 cd ..
 
-:: Verificacao se o PM2 esta instalado globalmente
-where pm2 >nul 2>nul
-if %ERRORLEVEL% NEQ 0 (
-    echo [ERRO] PM2 nao encontrado. Instalando PM2 globalmente...
-    call npm install -g pm2
-)
+:: Verificacao e instalacao do PM2
+echo [4/5] Verificando instalacao do PM2...
+call npm install -g pm2
+call pm2 install pm2-windows-startup
+call pm2-startup install
 
 :: Criando pasta de logs se nao existir
 if not exist "logs" mkdir logs
 if not exist "backend\logs" mkdir backend\logs
 
 :: Parando todas as instancias anteriores (se existirem)
-echo [4/5] Parando instancias anteriores...
+echo [5/5] Parando instancias anteriores...
 call pm2 stop all 2>nul
 call pm2 delete all 2>nul
 call pm2 flush
 
 :: Iniciando os serviços com PM2 usando o arquivo de configuração
-echo [5/5] Iniciando servicos com PM2...
+echo Iniciando servicos com PM2...
 call pm2 start ecosystem.config.cjs
 
 :: Salvando a configuração do PM2
