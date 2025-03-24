@@ -7,44 +7,30 @@ REM Define diretamente o caminho onde o projeto está na outra máquina
 cd /d "C:\Users\app\Documents\Sistema-Pedidos\sistemapedidosproducao-main"
 
 echo Diretorio atual: %CD%
-echo.
-echo Listando conteudo do diretorio:
-dir /b
-echo.
 
-REM Verificar se há qualquer coisa parecida com "frontend"
-echo Procurando por pastas que contenham "front" no nome:
-dir /b /s *front*
-echo.
+REM Verifica se a estrutura do projeto é válida
+if not exist "src" (
+    echo Pasta src nao encontrada!
+    pause
+    exit /b 1
+)
 
-REM Verificar se há qualquer coisa parecida com "backend"
-echo Procurando por pastas que contenham "back" no nome:
-dir /b /s *back*
-echo.
+if not exist "backend" (
+    echo Pasta backend nao encontrada!
+    pause
+    exit /b 1
+)
 
-REM Detectar estrutura baseada no que for encontrado
-echo Tente executar o script novamente e tire uma foto da tela
-echo mostrando o resultado da listagem de diretorios acima.
-echo.
-echo Vamos precisar entender a estrutura real de pastas no servidor
-echo antes de continuar.
-echo.
-pause
-exit /b 1
-
-REM Instala dependencias do frontend
+REM Instala dependencias do frontend (que está na raiz)
 echo Instalando dependencias do frontend...
-cd frontend
 if not exist "package.json" (
-    echo Arquivo package.json nao encontrado no frontend
-    cd ..
+    echo Arquivo package.json nao encontrado para o frontend
     pause
     exit /b 1
 )
 call npm install
 if %errorlevel% neq 0 (
     echo Erro ao instalar dependencias do frontend
-    cd ..
     pause
     exit /b 1
 )
@@ -54,13 +40,11 @@ echo Construindo frontend para producao...
 call npm run build
 if %errorlevel% neq 0 (
     echo Erro ao construir frontend
-    cd ..
     pause
     exit /b 1
 )
 
-REM Volta para a raiz e instala dependencias do backend
-cd ..
+REM Instala dependencias do backend
 echo Instalando dependencias do backend...
 cd backend
 if not exist "package.json" (
@@ -88,7 +72,7 @@ echo     {>> ecosystem.config.cjs
 echo       name: 'sistema-pedidos-frontend',>> ecosystem.config.cjs
 echo       script: 'node',>> ecosystem.config.cjs
 echo       args: 'node_modules/vite/bin/vite.js preview',>> ecosystem.config.cjs
-echo       cwd: './frontend',>> ecosystem.config.cjs
+echo       cwd: './',>> ecosystem.config.cjs
 echo       env: {>> ecosystem.config.cjs
 echo         NODE_ENV: 'production',>> ecosystem.config.cjs
 echo         HOST: '0.0.0.0',>> ecosystem.config.cjs
@@ -155,7 +139,6 @@ if %errorlevel% neq 0 (
 
 REM Cria diretório de logs se não existir
 if not exist "logs" mkdir logs
-if not exist "frontend\logs" mkdir frontend\logs
 if not exist "backend\logs" mkdir backend\logs
 
 REM Para instâncias anteriores do PM2
