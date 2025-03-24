@@ -7,18 +7,30 @@ REM Define diretamente o caminho onde o projeto está na outra máquina
 cd /d "C:\Users\app\Documents\Sistema-Pedidos\sistemapedidosproducao-main"
 
 echo Diretorio atual: %CD%
+echo.
+echo Listando conteudo do diretorio:
+dir /b
+echo.
 
-if not exist "frontend" (
-    echo Pasta frontend nao encontrada!
-    pause
-    exit /b 1
-)
+REM Verificar se há qualquer coisa parecida com "frontend"
+echo Procurando por pastas que contenham "front" no nome:
+dir /b /s *front*
+echo.
 
-if not exist "backend" (
-    echo Pasta backend nao encontrada!
-    pause
-    exit /b 1
-)
+REM Verificar se há qualquer coisa parecida com "backend"
+echo Procurando por pastas que contenham "back" no nome:
+dir /b /s *back*
+echo.
+
+REM Detectar estrutura baseada no que for encontrado
+echo Tente executar o script novamente e tire uma foto da tela
+echo mostrando o resultado da listagem de diretorios acima.
+echo.
+echo Vamos precisar entender a estrutura real de pastas no servidor
+echo antes de continuar.
+echo.
+pause
+exit /b 1
 
 REM Instala dependencias do frontend
 echo Instalando dependencias do frontend...
