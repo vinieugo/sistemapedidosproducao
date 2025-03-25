@@ -5,12 +5,25 @@ echo =============================================================
 echo      INICIANDO SISTEMA DE PEDIDOS - PRODUCAO
 echo =============================================================
 
-REM Define diretamente o caminho onde o projeto está
-cd /d "C:\Users\app\Documents\Sistema-Pedidos\sistemapedidosproducao-main"
+REM Verifica privilégios de administrador
+net session >nul 2>&1
+if %errorlevel% neq 0 (
+    echo AVISO: Este script deve ser executado como Administrador
+    echo       para evitar problemas de permissao.
+    echo.
+    echo Para executar como Administrador:
+    echo 1. Clique com o botao direito no arquivo
+    echo 2. Selecione "Executar como administrador"
+    echo.
+    pause
+    exit /b 1
+)
 
+REM Define o diretório do projeto
+cd /d "C:\Users\app\Documents\Sistema-Pedidos\sistemapedidosproducao-main"
 echo Diretorio atual: %CD%
 
-REM Obtém o endereço IP da máquina
+REM Obtém o IP da máquina
 echo Detectando IP da maquina...
 for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /i "IPv4"') do (
     set "IP=%%a"
@@ -22,37 +35,39 @@ if not defined IP set "IP=192.168.5.3"
 echo IP detectado: !IP!
 echo.
 
-REM Configurando o backend
+REM Para processos anteriores
+echo Parando servicos anteriores...
+taskkill /f /im node.exe >nul 2>&1
+call pm2 stop all 2>nul
+call pm2 delete all 2>nul
+timeout /t 3 >nul
+
+REM Configuração do Backend
 echo =============================================================
 echo      CONFIGURANDO BACKEND
 echo =============================================================
 cd backend
 
-REM Configurando o arquivo .env do backend
+REM Configura o arquivo .env
 echo Configurando banco de dados...
 echo DATABASE_URL="mysql://root:@192.168.5.3:3306/sistema_pedidos" > .env
 echo PORT=8081 >> .env
 echo HOST=0.0.0.0 >> .env
-echo Arquivo .env criado com sucesso.
 
-REM Verifica se o node_modules existe
-if not exist "node_modules" (
-    echo Instalando dependencias do backend...
-    call npm install
-    if %errorlevel% neq 0 (
-        echo Erro ao instalar dependencias do backend.
-        pause
-        exit /b 1
-    )
-)
+REM Limpa e reinstala as dependências
+echo Instalando dependencias do backend...
+if exist "node_modules" rmdir /s /q node_modules
+call npm install express cors dotenv mysql2 @prisma/client --no-save --force
+call npm install prisma --save-dev --force
+
 cd ..
 
-REM Configurando o frontend
+REM Configuração do Frontend
 echo =============================================================
 echo      CONFIGURANDO FRONTEND
 echo =============================================================
 
-REM Ajusta o arquivo vite.config.js para usar o endereço correto da API
+REM Configura o Vite
 echo Configurando Vite...
 echo import { defineConfig } from 'vite';> vite.config.js
 echo export default defineConfig({>> vite.config.js
@@ -68,34 +83,23 @@ echo   define: {>> vite.config.js
 echo     'process.env.VITE_API_URL': JSON.stringify('http://!IP!:8081/api')>> vite.config.js
 echo   }>> vite.config.js
 echo });>> vite.config.js
-echo Arquivo vite.config.js configurado com sucesso.
 
-REM Verifica se o node_modules existe
-if not exist "node_modules" (
-    echo Instalando dependencias do frontend...
-    call npm install
-    if %errorlevel% neq 0 (
-        echo Erro ao instalar dependencias do frontend.
-        pause
-        exit /b 1
-    )
-)
-
-REM Compilando o frontend
-echo Compilando frontend para producao...
+REM Compila o frontend
+echo Compilando frontend...
+if exist "node_modules" rmdir /s /q node_modules
+call npm install --force
 call npm run build
-if %errorlevel% neq 0 (
-    echo Erro ao compilar o frontend.
-    pause
-    exit /b 1
-)
 
-REM Configurando PM2
+REM Configuração do PM2
 echo =============================================================
 echo      CONFIGURANDO PM2
 echo =============================================================
 
-REM Atualiza o arquivo ecosystem.config.cjs
+REM Cria diretórios de logs
+if not exist "logs" mkdir logs
+if not exist "backend\logs" mkdir backend\logs
+
+REM Configura o PM2
 echo Configurando PM2...
 echo module.exports = {> ecosystem.config.cjs
 echo   apps: [>> ecosystem.config.cjs
@@ -143,55 +147,22 @@ echo       autorestart: true>> ecosystem.config.cjs
 echo     }>> ecosystem.config.cjs
 echo   ]>> ecosystem.config.cjs
 echo };>> ecosystem.config.cjs
-echo Arquivo ecosystem.config.cjs configurado com sucesso.
 
-REM Cria diretórios de logs
-if not exist "logs" mkdir logs
-if not exist "backend\logs" mkdir backend\logs
-
-REM Verifica se o PM2 está instalado
-where pm2 >nul 2>nul
+REM Instala o PM2 se necessário
+where pm2 >nul 2>&1
 if %errorlevel% neq 0 (
     echo Instalando PM2...
-    call npm install -g pm2
-    if %errorlevel% neq 0 (
-        echo Erro ao instalar PM2.
-        pause
-        exit /b 1
-    )
-    call npm install -g pm2-windows-startup
-    if %errorlevel% neq 0 (
-        echo Aviso: Não foi possível instalar pm2-windows-startup.
-    )
+    call npm install -g pm2 --force
 )
-
-REM Para instâncias anteriores do PM2
-echo Parando serviços anteriores...
-call pm2 stop all 2>nul
-call pm2 delete all 2>nul
 
 REM Inicia os serviços
 echo =============================================================
 echo      INICIANDO SERVIÇOS
 echo =============================================================
 call pm2 start ecosystem.config.cjs
-if %errorlevel% neq 0 (
-    echo Erro ao iniciar os serviços.
-    pause
-    exit /b 1
-)
-
-REM Salva a configuração do PM2
-echo Salvando configuração do PM2...
 call pm2 save
-if %errorlevel% neq 0 (
-    echo Aviso: Não foi possível salvar a configuração do PM2.
-)
 
-REM Tenta configurar o startup
-call pm2-startup install 2>nul
-
-REM Resumo do sistema
+REM Resumo
 echo.
 echo =============================================================
 echo      SISTEMA INICIADO COM SUCESSO!
