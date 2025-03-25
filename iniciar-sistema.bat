@@ -42,30 +42,63 @@ call pm2 stop all 2>nul
 call pm2 delete all 2>nul
 timeout /t 3 >nul
 
+REM Limpa cache do npm
+echo Limpando cache do npm...
+call npm cache clean --force
+
 REM Configuração do Backend
 echo =============================================================
 echo      CONFIGURANDO BACKEND
 echo =============================================================
 cd backend
 
+REM Limpa instalações anteriores
+echo Limpando instalacoes anteriores...
+if exist "node_modules" rmdir /s /q node_modules
+if exist "package-lock.json" del package-lock.json
+
+REM Cria um novo package.json limpo
+echo Criando package.json...
+echo {> package.json
+echo   "name": "sistema-pedidos-backend",>> package.json
+echo   "version": "1.0.0",>> package.json
+echo   "main": "src/server.js",>> package.json
+echo   "scripts": {>> package.json
+echo     "dev": "nodemon src/server.js",>> package.json
+echo     "start": "node src/server.js">> package.json
+echo   },>> package.json
+echo   "dependencies": {>> package.json
+echo     "express": "^4.18.2",>> package.json
+echo     "cors": "^2.8.5",>> package.json
+echo     "dotenv": "^16.4.5",>> package.json
+echo     "mysql2": "^3.9.2",>> package.json
+echo     "@prisma/client": "^5.10.2">> package.json
+echo   },>> package.json
+echo   "devDependencies": {>> package.json
+echo     "prisma": "^5.10.2",>> package.json
+echo     "nodemon": "^3.1.0">> package.json
+echo   }>> package.json
+echo }>> package.json
+
+REM Instala o Prisma globalmente
+echo Instalando Prisma globalmente...
+call npm install -g prisma@5.10.2 --force
+
+REM Instala as dependências uma por uma
+echo Instalando dependencias do backend...
+call npm install express --save --force
+call npm install cors --save --force
+call npm install dotenv --save --force
+call npm install mysql2 --save --force
+call npm install @prisma/client@5.10.2 --save --force
+call npm install prisma@5.10.2 --save-dev --force
+call npm install nodemon --save-dev --force
+
 REM Configura o arquivo .env
 echo Configurando banco de dados...
 echo DATABASE_URL="mysql://root:@192.168.5.3:3306/sistema_pedidos" > .env
 echo PORT=8081 >> .env
 echo HOST=0.0.0.0 >> .env
-
-REM Limpa e reinstala as dependências
-echo Instalando dependencias do backend...
-if exist "node_modules" rmdir /s /q node_modules
-if exist "package-lock.json" del package-lock.json
-
-REM Instala primeiro os pacotes principais sem o Prisma
-echo Instalando pacotes principais...
-call npm install express cors dotenv mysql2 --no-save --force
-
-REM Instala o Prisma separadamente
-echo Instalando Prisma...
-call npm install prisma @prisma/client --save-dev --force
 
 REM Gera o cliente Prisma
 echo Gerando cliente Prisma...
@@ -77,6 +110,11 @@ REM Configuração do Frontend
 echo =============================================================
 echo      CONFIGURANDO FRONTEND
 echo =============================================================
+
+REM Limpa instalações anteriores
+echo Limpando instalacoes anteriores...
+if exist "node_modules" rmdir /s /q node_modules
+if exist "package-lock.json" del package-lock.json
 
 REM Configura o Vite
 echo Configurando Vite...
@@ -97,8 +135,6 @@ echo });>> vite.config.js
 
 REM Compila o frontend
 echo Compilando frontend...
-if exist "node_modules" rmdir /s /q node_modules
-if exist "package-lock.json" del package-lock.json
 call npm install --force
 call npm run build
 
