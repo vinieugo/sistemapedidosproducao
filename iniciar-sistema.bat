@@ -57,8 +57,19 @@ echo HOST=0.0.0.0 >> .env
 REM Limpa e reinstala as dependências
 echo Instalando dependencias do backend...
 if exist "node_modules" rmdir /s /q node_modules
-call npm install express cors dotenv mysql2 @prisma/client --no-save --force
-call npm install prisma --save-dev --force
+if exist "package-lock.json" del package-lock.json
+
+REM Instala primeiro os pacotes principais sem o Prisma
+echo Instalando pacotes principais...
+call npm install express cors dotenv mysql2 --no-save --force
+
+REM Instala o Prisma separadamente
+echo Instalando Prisma...
+call npm install prisma @prisma/client --save-dev --force
+
+REM Gera o cliente Prisma
+echo Gerando cliente Prisma...
+call npx prisma generate
 
 cd ..
 
@@ -87,6 +98,7 @@ echo });>> vite.config.js
 REM Compila o frontend
 echo Compilando frontend...
 if exist "node_modules" rmdir /s /q node_modules
+if exist "package-lock.json" del package-lock.json
 call npm install --force
 call npm run build
 
