@@ -60,19 +60,31 @@ echo PORT=8081 >> .env
 echo HOST=0.0.0.0 >> .env
 echo Arquivo .env criado com sucesso.
 
-REM Verifica se o node_modules existe mas sem tentar removê-lo
-if not exist "node_modules" (
-    mkdir node_modules 2>nul
-) else (
-    echo Node modules ja existe, sera utilizado.
+REM Verifica se o node_modules existe
+if exist "node_modules" (
+    echo Removendo node_modules existente...
+    rmdir /s /q node_modules 2>nul
 )
+
+REM Cria um novo node_modules limpo
+echo Criando novo node_modules...
+mkdir node_modules
 
 REM Instala os pacotes principais diretamente
 echo Instalando pacotes essenciais do backend...
-call npm install express cors dotenv mysql2 @prisma/client --no-save
+call npm install express cors dotenv mysql2 @prisma/client --no-save --force
 if %errorlevel% neq 0 (
-    echo AVISO: Alguns pacotes podem nao ter sido instalados corretamente.
-    echo        O sistema tentara funcionar com os pacotes existentes.
+    echo AVISO: Erro ao instalar pacotes principais.
+    echo        Tentando instalar apenas o essencial...
+    call npm install express cors dotenv mysql2 --no-save --force
+)
+
+REM Instala o Prisma separadamente
+echo Instalando Prisma...
+call npm install prisma --save-dev --force
+if %errorlevel% neq 0 (
+    echo AVISO: Erro ao instalar Prisma.
+    echo        O sistema tentara funcionar sem ele.
 )
 
 cd ..
@@ -105,13 +117,17 @@ if exist "dist" (
     echo Build do frontend encontrada, pulando compilacao...
 ) else (
     REM Verifica se o node_modules existe
-    if not exist "node_modules" (
-        echo Instalando dependencias do frontend...
-        call npm install
-        if %errorlevel% neq 0 (
-            echo Erro ao instalar dependencias do frontend.
-            echo Tentando com os modulos existentes...
-        )
+    if exist "node_modules" (
+        echo Removendo node_modules existente...
+        rmdir /s /q node_modules 2>nul
+    )
+    
+    echo Instalando dependencias do frontend...
+    call npm install --force
+    if %errorlevel% neq 0 (
+        echo Erro ao instalar dependencias do frontend.
+        echo Tentando com instalacao minima...
+        call npm install vite @vitejs/plugin-react --force
     )
 
     REM Compilando o frontend
@@ -187,7 +203,7 @@ REM Verifica se o PM2 está instalado
 where pm2 >nul 2>&1
 if %errorlevel% neq 0 (
     echo Instalando PM2...
-    call npm install -g pm2
+    call npm install -g pm2 --force
     if %errorlevel% neq 0 (
         echo Erro ao instalar PM2.
         pause
