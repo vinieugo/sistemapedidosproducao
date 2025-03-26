@@ -25,13 +25,6 @@ if not exist "backend" (
     exit /b 1
 )
 
-if not exist "frontend" (
-    echo Erro: Pasta frontend não encontrada em %CD%
-    echo Certifique-se de que o script está na pasta raiz do projeto
-    pause
-    exit /b 1
-)
-
 REM Configura o IP da máquina e senha do banco
 set "IP=192.168.5.3"
 set "DB_PASSWORD=root"
@@ -56,27 +49,25 @@ cd ..
 
 REM Instala dependências do frontend
 echo Instalando dependências do frontend...
-cd frontend
 call npm install
 call npm run build
-cd ..
 
 REM Configura o frontend para usar o IP correto
 echo Configurando frontend...
-if exist "frontend\vite.config.js" (
-    powershell -Command "(Get-Content 'frontend\vite.config.js') -replace 'localhost', '%IP%' | Set-Content 'frontend\vite.config.js'"
+if exist "vite.config.js" (
+    powershell -Command "(Get-Content 'vite.config.js') -replace 'localhost', '%IP%' | Set-Content 'vite.config.js'"
 ) else (
     echo Arquivo vite.config.js não encontrado. Criando novo...
-    echo import { defineConfig } from 'vite' > "frontend\vite.config.js"
-    echo import react from '@vitejs/plugin-react' >> "frontend\vite.config.js"
-    echo. >> "frontend\vite.config.js"
-    echo export default defineConfig({ >> "frontend\vite.config.js"
-    echo   plugins: [react()], >> "frontend\vite.config.js"
-    echo   server: { >> "frontend\vite.config.js"
-    echo     host: '%IP%', >> "frontend\vite.config.js"
-    echo     port: 5173 >> "frontend\vite.config.js"
-    echo   } >> "frontend\vite.config.js"
-    echo }) >> "frontend\vite.config.js"
+    echo import { defineConfig } from 'vite' > "vite.config.js"
+    echo import react from '@vitejs/plugin-react' >> "vite.config.js"
+    echo. >> "vite.config.js"
+    echo export default defineConfig({ >> "vite.config.js"
+    echo   plugins: [react()], >> "vite.config.js"
+    echo   server: { >> "vite.config.js"
+    echo     host: '%IP%', >> "vite.config.js"
+    echo     port: 5173 >> "vite.config.js"
+    echo   } >> "vite.config.js"
+    echo }) >> "vite.config.js"
 )
 
 REM Verifica se o PM2 está instalado
