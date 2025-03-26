@@ -15,6 +15,12 @@ app.use(cors({
 
 app.use(express.json());
 
+// Middleware para logging
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  next();
+});
+
 // Rota para favicon.ico
 app.get('/favicon.ico', (req, res) => {
   res.status(204).end(); // No Content
@@ -85,8 +91,12 @@ app.get('/api/pedidos', async (req, res) => {
       pages: Math.ceil(total / limit)
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Erro ao buscar pedidos' });
+    console.error('Erro detalhado ao buscar pedidos:', error);
+    res.status(500).json({ 
+      error: 'Erro ao buscar pedidos',
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
@@ -131,7 +141,11 @@ app.post('/api/pedidos', async (req, res) => {
     res.status(201).json(pedido);
   } catch (error) {
     console.error('Erro detalhado ao criar pedido:', error);
-    res.status(500).json({ error: `Erro ao criar pedido: ${error.message}` });
+    res.status(500).json({ 
+      error: 'Erro ao criar pedido',
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
@@ -237,6 +251,20 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 8081;
 const HOST = process.env.HOST || 'localhost';
 
-app.listen(PORT, HOST, () => {
-  console.log(`Servidor rodando em http://${HOST}:${PORT}`);
+// Função para testar a conexão com o banco de dados
+async function testDatabaseConnection() {
+  try {
+    await prisma.$connect();
+    console.log('Conexão com o banco de dados estabelecida com sucesso!');
+  } catch (error) {
+    console.error('Erro ao conectar com o banco de dados:', error);
+    process.exit(1);
+  }
+}
+
+// Iniciar o servidor após testar a conexão
+testDatabaseConnection().then(() => {
+  app.listen(PORT, HOST, () => {
+    console.log(`Servidor rodando em http://${HOST}:${PORT}`);
+  });
 }); 
