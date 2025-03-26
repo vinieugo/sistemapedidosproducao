@@ -33,21 +33,26 @@ module.exports = {
         PORT: 8081,
         DEBUG: 'prisma:*',
         LOG_LEVEL: 'debug',
-        DATABASE_URL: 'mysql://root:@192.168.5.3:3306/sistema_pedidos'
+        DATABASE_URL: 'mysql://root:@192.168.5.3:3307/sistema_pedidos',
+        CORS_ORIGIN: '*'
       },
       log_date_format: 'YYYY-MM-DD HH:mm:ss',
       merge_logs: true,
       log_type: 'json',
       error_file: './logs/backend-error.log',
       out_file: './logs/backend-out.log',
-      max_restarts: 5,
-      min_uptime: '5s',
+      max_restarts: 10,
+      min_uptime: '10s',
       watch: false,
       autorestart: true,
       exp_backoff_restart_delay: 100,
       wait_ready: true,
-      listen_timeout: 10000,
-      kill_timeout: 3000
+      listen_timeout: 30000,
+      kill_timeout: 5000,
+      max_memory_restart: '1G',
+      env_production: {
+        NODE_ENV: 'production'
+      }
     }
   ]
 }; 

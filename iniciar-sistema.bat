@@ -31,7 +31,7 @@ REM Configura o IP da máquina
 set IP=192.168.5.3
 
 REM Cria arquivo .env para o backend
-echo DATABASE_URL="mysql://root:@%IP%:3306/sistema_pedidos" > backend\.env
+echo DATABASE_URL="mysql://root:@%IP%:3307/sistema_pedidos" > backend\.env
 echo PORT=8081 >> backend\.env
 
 REM Instala dependências do backend
