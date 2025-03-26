@@ -2,9 +2,9 @@ module.exports = {
   apps: [
     {
       name: 'sistema-pedidos-frontend',
-      cwd: '.',
       script: 'npm',
       args: 'run preview',
+      cwd: '.',
       env: {
         NODE_ENV: 'production',
         HOST: '192.168.5.3',
@@ -32,8 +32,9 @@ module.exports = {
     },
     {
       name: 'sistema-pedidos-backend',
+      script: 'node',
+      args: 'src/server.js',
       cwd: './backend',
-      script: 'src/server.js',
       env: {
         NODE_ENV: 'production',
         HOST: '192.168.5.3',
