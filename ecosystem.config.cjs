@@ -38,7 +38,7 @@ module.exports = {
         PORT: 8081,
         DEBUG: 'prisma:*,express:*',
         LOG_LEVEL: 'debug',
-        DATABASE_URL: 'mysql://root:root@192.168.5.3:3307/sistema_pedidos',
+        DATABASE_URL: 'mysql://root:@192.168.5.3:3307/sistema_pedidos',
         CORS_ORIGIN: '*'
       },
       log_date_format: 'YYYY-MM-DD HH:mm:ss',
