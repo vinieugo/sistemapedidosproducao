@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // URL da API
-const API_URL = 'http://192.168.5.3:8081/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://192.168.5.3:8081/api';
 console.log('API URL configurada:', API_URL);
 
 // Configuração do Axios
@@ -24,6 +24,10 @@ api.interceptors.request.use(
       params: config.params,
       headers: config.headers
     });
+    
+    // Força a URL base a ser a correta em todo o caso
+    config.baseURL = API_URL;
+    
     return config;
   },
   error => {
