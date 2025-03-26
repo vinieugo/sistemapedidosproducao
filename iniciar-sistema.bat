@@ -13,18 +13,20 @@ if %errorLevel% neq 0 (
 )
 
 REM Define o diretório do projeto
-set "PROJECT_ROOT=%~dp0"
-cd /d "%PROJECT_ROOT%"
+set "PROJECT_ROOT=%CD%"
+echo Diretório atual: %PROJECT_ROOT%
 
 REM Verifica se as pastas existem
-if not exist "%PROJECT_ROOT%backend" (
+if not exist "backend" (
     echo Erro: Pasta backend não encontrada em %PROJECT_ROOT%
+    echo Certifique-se de que o script está na pasta raiz do projeto
     pause
     exit /b 1
 )
 
-if not exist "%PROJECT_ROOT%frontend" (
+if not exist "frontend" (
     echo Erro: Pasta frontend não encontrada em %PROJECT_ROOT%
+    echo Certifique-se de que o script está na pasta raiz do projeto
     pause
     exit /b 1
 )
@@ -33,46 +35,46 @@ REM Configura o IP da máquina
 set "IP=192.168.5.3"
 
 REM Cria diretório de logs se não existir
-if not exist "%PROJECT_ROOT%logs" mkdir "%PROJECT_ROOT%logs"
+if not exist "logs" mkdir "logs"
 
 REM Cria arquivo .env para o backend
-echo DATABASE_URL="mysql://root:@%IP%:3307/sistema_pedidos" > "%PROJECT_ROOT%backend\.env"
-echo PORT=8081 >> "%PROJECT_ROOT%backend\.env"
-echo HOST="%IP%" >> "%PROJECT_ROOT%backend\.env"
-echo DEBUG="prisma:*" >> "%PROJECT_ROOT%backend\.env"
-echo LOG_LEVEL="debug" >> "%PROJECT_ROOT%backend\.env"
-echo CORS_ORIGIN="*" >> "%PROJECT_ROOT%backend\.env"
+echo DATABASE_URL="mysql://root:@%IP%:3307/sistema_pedidos" > "backend\.env"
+echo PORT=8081 >> "backend\.env"
+echo HOST="%IP%" >> "backend\.env"
+echo DEBUG="prisma:*" >> "backend\.env"
+echo LOG_LEVEL="debug" >> "backend\.env"
+echo CORS_ORIGIN="*" >> "backend\.env"
 
 REM Instala dependências do backend
 echo Instalando dependências do backend...
-cd "%PROJECT_ROOT%backend"
+cd backend
 call npm install express cors dotenv mysql2 --save
 call npm install -g pm2 --force
-cd "%PROJECT_ROOT%"
+cd ..
 
 REM Instala dependências do frontend
 echo Instalando dependências do frontend...
-cd "%PROJECT_ROOT%frontend"
+cd frontend
 call npm install
 call npm run build
-cd "%PROJECT_ROOT%"
+cd ..
 
 REM Configura o frontend para usar o IP correto
 echo Configurando frontend...
-if exist "%PROJECT_ROOT%frontend\vite.config.js" (
-    powershell -Command "(Get-Content '%PROJECT_ROOT%frontend\vite.config.js') -replace 'localhost', '%IP%' | Set-Content '%PROJECT_ROOT%frontend\vite.config.js'"
+if exist "frontend\vite.config.js" (
+    powershell -Command "(Get-Content 'frontend\vite.config.js') -replace 'localhost', '%IP%' | Set-Content 'frontend\vite.config.js'"
 ) else (
     echo Arquivo vite.config.js não encontrado. Criando novo...
-    echo import { defineConfig } from 'vite' > "%PROJECT_ROOT%frontend\vite.config.js"
-    echo import react from '@vitejs/plugin-react' >> "%PROJECT_ROOT%frontend\vite.config.js"
-    echo. >> "%PROJECT_ROOT%frontend\vite.config.js"
-    echo export default defineConfig({ >> "%PROJECT_ROOT%frontend\vite.config.js"
-    echo   plugins: [react()], >> "%PROJECT_ROOT%frontend\vite.config.js"
-    echo   server: { >> "%PROJECT_ROOT%frontend\vite.config.js"
-    echo     host: '%IP%', >> "%PROJECT_ROOT%frontend\vite.config.js"
-    echo     port: 5173 >> "%PROJECT_ROOT%frontend\vite.config.js"
-    echo   } >> "%PROJECT_ROOT%frontend\vite.config.js"
-    echo }) >> "%PROJECT_ROOT%frontend\vite.config.js"
+    echo import { defineConfig } from 'vite' > "frontend\vite.config.js"
+    echo import react from '@vitejs/plugin-react' >> "frontend\vite.config.js"
+    echo. >> "frontend\vite.config.js"
+    echo export default defineConfig({ >> "frontend\vite.config.js"
+    echo   plugins: [react()], >> "frontend\vite.config.js"
+    echo   server: { >> "frontend\vite.config.js"
+    echo     host: '%IP%', >> "frontend\vite.config.js"
+    echo     port: 5173 >> "frontend\vite.config.js"
+    echo   } >> "frontend\vite.config.js"
+    echo }) >> "frontend\vite.config.js"
 )
 
 REM Verifica se o PM2 está instalado
@@ -85,7 +87,7 @@ if %errorLevel% neq 0 (
 REM Inicia os serviços com PM2
 echo Iniciando serviços...
 pm2 delete all
-pm2 start "%PROJECT_ROOT%ecosystem.config.cjs"
+pm2 start "ecosystem.config.cjs"
 pm2 save
 
 REM Abre um novo terminal para mostrar os logs do backend
