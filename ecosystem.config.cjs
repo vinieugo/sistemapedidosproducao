@@ -9,7 +9,8 @@ module.exports = {
         NODE_ENV: 'production',
         HOST: '192.168.5.3',
         PORT: 5173,
-        DEBUG: 'true'
+        DEBUG: 'vite:*',
+        VITE_API_URL: 'http://192.168.5.3:8081'
       },
       log_date_format: 'YYYY-MM-DD HH:mm:ss',
       merge_logs: true,
@@ -20,7 +21,14 @@ module.exports = {
       min_uptime: '10s',
       watch: false,
       autorestart: true,
-      exp_backoff_restart_delay: 100
+      exp_backoff_restart_delay: 100,
+      wait_ready: false,
+      listen_timeout: 30000,
+      kill_timeout: 5000,
+      max_memory_restart: '1G',
+      env_production: {
+        NODE_ENV: 'production'
+      }
     },
     {
       name: 'sistema-pedidos-backend',
