@@ -14,29 +14,15 @@ if %errorLevel% neq 0 (
 REM Define o diretório do projeto
 cd /d "%~dp0"
 
-REM Verifica se o Node.js está instalado
-where node >nul 2>&1
-if %errorLevel% neq 0 (
-    echo Node.js não encontrado. Instalando Node.js...
-    
-    REM Baixa o instalador do Node.js
-    powershell -Command "& {Invoke-WebRequest -Uri 'https://nodejs.org/dist/v20.11.1/node-v20.11.1-x64.msi' -OutFile 'node-installer.msi'}"
-    
-    REM Instala o Node.js silenciosamente
-    echo Instalando Node.js...
-    msiexec /i node-installer.msi /quiet /norestart
-    
-    REM Aguarda a instalação
-    timeout /t 30 /nobreak
-    
-    REM Remove o instalador
-    del node-installer.msi
-    
-    REM Atualiza o PATH
-    setx PATH "%PATH%;C:\Program Files\nodejs" /M
-    
-    echo Node.js instalado com sucesso!
-    echo Por favor, feche e reabra o prompt de comando para continuar.
+REM Verifica se as pastas existem
+if not exist "backend" (
+    echo Erro: Pasta backend não encontrada!
+    pause
+    exit /b 1
+)
+
+if not exist "frontend" (
+    echo Erro: Pasta frontend não encontrada!
     pause
     exit /b 1
 )
@@ -64,7 +50,28 @@ cd ..
 
 REM Configura o frontend para usar o IP correto
 echo Configurando frontend...
-powershell -Command "(Get-Content frontend\vite.config.js) -replace 'localhost', '%IP%' | Set-Content frontend\vite.config.js"
+if exist "frontend\vite.config.js" (
+    powershell -Command "(Get-Content frontend\vite.config.js) -replace 'localhost', '%IP%' | Set-Content frontend\vite.config.js"
+) else (
+    echo Arquivo vite.config.js não encontrado. Criando novo...
+    echo import { defineConfig } from 'vite' > frontend\vite.config.js
+    echo import react from '@vitejs/plugin-react' >> frontend\vite.config.js
+    echo. >> frontend\vite.config.js
+    echo export default defineConfig({ >> frontend\vite.config.js
+    echo   plugins: [react()], >> frontend\vite.config.js
+    echo   server: { >> frontend\vite.config.js
+    echo     host: '%IP%', >> frontend\vite.config.js
+    echo     port: 5173 >> frontend\vite.config.js
+    echo   } >> frontend\vite.config.js
+    echo }) >> frontend\vite.config.js
+)
+
+REM Verifica se o PM2 está instalado
+where pm2 >nul 2>&1
+if %errorLevel% neq 0 (
+    echo Instalando PM2 globalmente...
+    call npm install -g pm2 --force
+)
 
 REM Inicia os serviços com PM2
 echo Iniciando serviços...
