@@ -13,17 +13,9 @@ if %errorLevel% neq 0 (
 )
 
 REM Define o diretório do projeto
-set "PROJECT_ROOT=%~dp0"
+set "PROJECT_ROOT=C:\Users\app\Documents\Sistema-Pedidos\sistemapedidosproducao-main"
 cd /d "%PROJECT_ROOT%"
 echo Diretório atual: %CD%
-
-REM Verifica se as pastas existem
-if not exist "backend" (
-    echo Erro: Pasta backend não encontrada em %CD%
-    echo Certifique-se de que o script está na pasta raiz do projeto
-    pause
-    exit /b 1
-)
 
 REM Configura o IP da máquina e senha do banco
 set "IP=192.168.5.3"
