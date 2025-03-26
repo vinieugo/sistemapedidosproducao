@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://192.168.5.3:8081/api'
+  baseURL: process.env.VITE_API_URL || 'http://192.168.5.3:8081/api'
 });
 
 export const getPedidos = async (page = 1, status = null, dataInicial = null, dataFinal = null) => {
