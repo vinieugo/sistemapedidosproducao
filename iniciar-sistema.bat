@@ -32,14 +32,15 @@ if not exist "frontend" (
     exit /b 1
 )
 
-REM Configura o IP da máquina
+REM Configura o IP da máquina e senha do banco
 set "IP=192.168.5.3"
+set "DB_PASSWORD=root"
 
 REM Cria diretório de logs se não existir
 if not exist "logs" mkdir "logs"
 
 REM Cria arquivo .env para o backend
-echo DATABASE_URL="mysql://root:@%IP%:3307/sistema_pedidos" > "backend\.env"
+echo DATABASE_URL="mysql://root:%DB_PASSWORD%@%IP%:3307/sistema_pedidos" > "backend\.env"
 echo PORT=8081 >> "backend\.env"
 echo HOST="%IP%" >> "backend\.env"
 echo DEBUG="prisma:*" >> "backend\.env"
