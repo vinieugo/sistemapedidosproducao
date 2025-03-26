@@ -75,9 +75,6 @@ pm2 delete all
 pm2 start "ecosystem.config.cjs"
 pm2 save
 
-REM Abre um novo terminal para mostrar os logs do backend
-start cmd /k "cd /d %PROJECT_ROOT% && pm2 logs backend --lines 1000"
-
 echo.
 echo Sistema iniciado com sucesso!
 echo Frontend: http://%IP%:5173
@@ -89,4 +86,8 @@ echo pm2 monit - Monitorar processos
 echo pm2 stop all - Parar todos os serviços
 echo pm2 delete all - Remover todos os serviços
 echo.
-pause 
+echo Mostrando logs do backend...
+echo.
+
+REM Mostra os logs do backend na mesma janela
+pm2 logs backend --lines 1000 
