@@ -2,8 +2,8 @@ module.exports = {
   apps: [
     {
       name: 'sistema-pedidos-frontend',
-      script: 'npm',
-      args: 'run preview',
+      script: 'node_modules/vite/bin/vite.js',
+      args: 'preview',
       cwd: '.',
       env: {
         NODE_ENV: 'production',
