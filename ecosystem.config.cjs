@@ -2,15 +2,15 @@ module.exports = {
   apps: [
     {
       name: 'sistema-pedidos-frontend',
-      script: 'node_modules/vite/bin/vite.js',
-      args: 'preview',
+      script: 'npm',
+      args: 'run build && npm run preview',
       cwd: '.',
       env: {
         NODE_ENV: 'production',
         HOST: '192.168.5.3',
         PORT: 5173,
         DEBUG: 'vite:*',
-        VITE_API_URL: 'http://192.168.5.3:8081'
+        VITE_API_URL: 'http://192.168.5.3:8081/api'
       },
       log_date_format: 'YYYY-MM-DD HH:mm:ss',
       merge_logs: true,
