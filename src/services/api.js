@@ -1,7 +1,10 @@
 import axios from 'axios';
 
+const API_URL = 'http://192.168.5.3:8081/api';
+console.log('API URL:', API_URL);
+
 const api = axios.create({
-  baseURL: process.env.VITE_API_URL || 'http://192.168.5.3:8081/api'
+  baseURL: API_URL
 });
 
 export const getPedidos = async (page = 1, status = null, dataInicial = null, dataFinal = null) => {
