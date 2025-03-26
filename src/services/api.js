@@ -1,24 +1,28 @@
 import axios from 'axios';
 
+// URL da API
 const API_URL = 'http://192.168.5.3:8081/api';
-console.log('API URL:', API_URL);
+console.log('API URL configurada:', API_URL);
 
+// Configuração do Axios
 const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
-  }
+  },
+  timeout: 10000 // 10 segundos
 });
 
-// Adiciona um interceptor para logar todas as requisições
+// Interceptor para requisições
 api.interceptors.request.use(
   config => {
-    console.log('Requisição:', {
+    console.log('Requisição sendo enviada:', {
       url: config.url,
       method: config.method,
       baseURL: config.baseURL,
-      params: config.params
+      params: config.params,
+      headers: config.headers
     });
     return config;
   },
@@ -28,12 +32,13 @@ api.interceptors.request.use(
   }
 );
 
-// Adiciona um interceptor para logar todas as respostas
+// Interceptor para respostas
 api.interceptors.response.use(
   response => {
-    console.log('Resposta:', {
+    console.log('Resposta recebida:', {
       status: response.status,
-      data: response.data
+      data: response.data,
+      headers: response.headers
     });
     return response;
   },
@@ -41,11 +46,32 @@ api.interceptors.response.use(
     console.error('Erro na resposta:', {
       message: error.message,
       status: error.response?.status,
-      data: error.response?.data
+      data: error.response?.data,
+      config: {
+        url: error.config?.url,
+        baseURL: error.config?.baseURL,
+        method: error.config?.method
+      }
     });
     return Promise.reject(error);
   }
 );
+
+// Função para testar a conexão com a API
+const testConnection = async () => {
+  try {
+    console.log('Testando conexão com a API...');
+    const response = await api.get('/');
+    console.log('Conexão com a API estabelecida:', response.data);
+    return true;
+  } catch (error) {
+    console.error('Erro ao testar conexão com a API:', error);
+    return false;
+  }
+};
+
+// Testa a conexão ao iniciar
+testConnection();
 
 export const getPedidos = async (page = 1, status = null, dataInicial = null, dataFinal = null) => {
   // Garantir que as datas sejam enviadas no formato ISO para preservar o fuso horário

@@ -12,6 +12,14 @@ export default defineConfig({
       origin: '*',
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+    },
+    proxy: {
+      '/api': {
+        target: 'http://192.168.5.3:8081',
+        changeOrigin: true,
+        secure: false,
+        ws: true
+      }
     }
   },
   preview: {
