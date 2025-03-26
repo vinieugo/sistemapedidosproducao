@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// URL da API
-const API_URL = import.meta.env.VITE_API_URL || 'http://192.168.5.3:8081/api';
-console.log('API URL configurada:', API_URL);
+// URL da API diretamente configurada (sem usar variáveis de ambiente)
+const API_URL = 'http://192.168.5.3:8081/api';
+console.log('API URL configurada hardcoded:', API_URL);
 
 // Configuração do Axios
 const api = axios.create({
