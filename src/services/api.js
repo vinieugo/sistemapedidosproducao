@@ -4,8 +4,48 @@ const API_URL = 'http://192.168.5.3:8081/api';
 console.log('API URL:', API_URL);
 
 const api = axios.create({
-  baseURL: API_URL
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  }
 });
+
+// Adiciona um interceptor para logar todas as requisições
+api.interceptors.request.use(
+  config => {
+    console.log('Requisição:', {
+      url: config.url,
+      method: config.method,
+      baseURL: config.baseURL,
+      params: config.params
+    });
+    return config;
+  },
+  error => {
+    console.error('Erro na requisição:', error);
+    return Promise.reject(error);
+  }
+);
+
+// Adiciona um interceptor para logar todas as respostas
+api.interceptors.response.use(
+  response => {
+    console.log('Resposta:', {
+      status: response.status,
+      data: response.data
+    });
+    return response;
+  },
+  error => {
+    console.error('Erro na resposta:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data
+    });
+    return Promise.reject(error);
+  }
+);
 
 export const getPedidos = async (page = 1, status = null, dataInicial = null, dataFinal = null) => {
   // Garantir que as datas sejam enviadas no formato ISO para preservar o fuso horário
