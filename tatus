@@ -1,0 +1,5 @@
+[33m9e8e419[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Adicionados scripts para preparar pacote completo do sistema
+[33m3d1cc00[m Adicionados scripts mínimos que não tentam instalar dependências
+[33m2191a37[m Adicionado script batch para executar o PowerShell com bypass de política de execução
+[33m2de90c1[m Adicionado script PowerShell para inicialização do sistema sem Prisma
+[33maf1ce6f[m Criado script de inicialização sem Prisma para contornar problemas de permissão
