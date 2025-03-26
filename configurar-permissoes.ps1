@@ -10,70 +10,76 @@ $pastaBase = "C:\Users\app\Documents\Sistema-Pedidos"
 
 Write-Host "Configurando permissões para o usuário $usuario..." -ForegroundColor Green
 
-# Adiciona o usuário ao grupo de administradores usando net localgroup
-Write-Host "Adicionando usuário ao grupo de administradores..." -ForegroundColor Yellow
-try {
-    $result = net localgroup "Administrators" $usuario /add
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "Usuário adicionado com sucesso!" -ForegroundColor Green
-    } else {
-        Write-Host "Usuário já está no grupo de administradores." -ForegroundColor Yellow
+# Lista de pastas para configurar permissões
+$pastas = @(
+    $pastaBase,
+    "C:\Program Files\nodejs",
+    "C:\Users\app\AppData\Roaming\npm",
+    "C:\Users\app\AppData\Local\npm",
+    "C:\Users\app\AppData\Local\npm-cache",
+    "C:\Users\app\AppData\Roaming\npm-cache",
+    "C:\Users\app\AppData\Local\Programs\nodejs",
+    "C:\Users\app\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\nodejs"
+)
+
+# Função para configurar permissões recursivamente
+function Set-PermissionsRecursive {
+    param (
+        [string]$Path,
+        [string]$User,
+        [string]$Permission = "FullControl"
+    )
+    
+    try {
+        if (Test-Path $Path) {
+            Write-Host "Configurando permissões em: $Path" -ForegroundColor Yellow
+            
+            # Configura permissões na pasta principal
+            $acl = Get-Acl $Path
+            $acl.SetAccessRuleProtection($false, $true)
+            $rule = New-Object System.Security.AccessControl.FileSystemAccessRule($User, $Permission, "ContainerInherit,ObjectInherit", "None", "Allow")
+            $acl.AddAccessRule($rule)
+            Set-Acl $Path $acl -ErrorAction Stop
+            
+            # Configura permissões em todos os arquivos e subpastas
+            Get-ChildItem -Path $Path -Recurse | ForEach-Object {
+                $acl = Get-Acl $_.FullName
+                $acl.SetAccessRuleProtection($false, $true)
+                $rule = New-Object System.Security.AccessControl.FileSystemAccessRule($User, $Permission, "ContainerInherit,ObjectInherit", "None", "Allow")
+                $acl.AddAccessRule($rule)
+                Set-Acl $_.FullName $acl -ErrorAction Stop
+            }
+            
+            Write-Host "Permissões configuradas com sucesso em: $Path" -ForegroundColor Green
+        } else {
+            Write-Host "Pasta não encontrada: $Path" -ForegroundColor Yellow
+        }
+    } catch {
+        Write-Host "Erro ao configurar permissões em $Path : $_" -ForegroundColor Red
     }
-} catch {
-    Write-Host "Erro ao adicionar usuário ao grupo: $_" -ForegroundColor Red
 }
 
-# Configura permissões na pasta do sistema
-Write-Host "Configurando permissões na pasta do sistema..." -ForegroundColor Yellow
-try {
-    if (Test-Path $pastaBase) {
-        $acl = Get-Acl $pastaBase
-        $acl.SetAccessRuleProtection($false, $true)
-        $rule = New-Object System.Security.AccessControl.FileSystemAccessRule($usuario, "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
-        $acl.AddAccessRule($rule)
-        Set-Acl $pastaBase $acl -ErrorAction Stop
-        Write-Host "Permissões configuradas com sucesso!" -ForegroundColor Green
-    } else {
-        Write-Host "Pasta do sistema não encontrada: $pastaBase" -ForegroundColor Red
-    }
-} catch {
-    Write-Host "Erro ao configurar permissões na pasta do sistema: $_" -ForegroundColor Red
+# Configura permissões em todas as pastas
+foreach ($pasta in $pastas) {
+    Set-PermissionsRecursive -Path $pasta -User $usuario
 }
 
-# Configura permissões no Node.js
-Write-Host "Configurando permissões no Node.js..." -ForegroundColor Yellow
+# Tenta instalar o PM2 globalmente
+Write-Host "Instalando PM2 globalmente..." -ForegroundColor Yellow
 try {
-    $nodePath = "C:\Program Files\nodejs"
-    if (Test-Path $nodePath) {
-        $acl = Get-Acl $nodePath
-        $acl.SetAccessRuleProtection($false, $true)
-        $rule = New-Object System.Security.AccessControl.FileSystemAccessRule($usuario, "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
-        $acl.AddAccessRule($rule)
-        Set-Acl $nodePath $acl -ErrorAction Stop
-        Write-Host "Permissões do Node.js configuradas com sucesso!" -ForegroundColor Green
-    } else {
-        Write-Host "Node.js não encontrado em: $nodePath" -ForegroundColor Yellow
-    }
+    npm install -g pm2 --force
+    Write-Host "PM2 instalado com sucesso!" -ForegroundColor Green
 } catch {
-    Write-Host "Erro ao configurar permissões do Node.js: $_" -ForegroundColor Red
+    Write-Host "Erro ao instalar PM2: $_" -ForegroundColor Red
 }
 
-# Configura permissões no npm
-Write-Host "Configurando permissões no npm..." -ForegroundColor Yellow
+# Tenta limpar o cache do npm
+Write-Host "Limpando cache do npm..." -ForegroundColor Yellow
 try {
-    $npmPath = "C:\Users\app\AppData\Roaming\npm"
-    if (Test-Path $npmPath) {
-        $acl = Get-Acl $npmPath
-        $acl.SetAccessRuleProtection($false, $true)
-        $rule = New-Object System.Security.AccessControl.FileSystemAccessRule($usuario, "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
-        $acl.AddAccessRule($rule)
-        Set-Acl $npmPath $acl -ErrorAction Stop
-        Write-Host "Permissões do npm configuradas com sucesso!" -ForegroundColor Green
-    } else {
-        Write-Host "Pasta npm não encontrada: $npmPath" -ForegroundColor Yellow
-    }
+    npm cache clean --force
+    Write-Host "Cache do npm limpo com sucesso!" -ForegroundColor Green
 } catch {
-    Write-Host "Erro ao configurar permissões do npm: $_" -ForegroundColor Red
+    Write-Host "Erro ao limpar cache do npm: $_" -ForegroundColor Red
 }
 
 Write-Host "`nProcesso de configuração de permissões concluído!" -ForegroundColor Green
