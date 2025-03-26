@@ -7,25 +7,26 @@ REM Verifica se está rodando como administrador
 net session >nul 2>&1
 if %errorLevel% neq 0 (
     echo Este script precisa ser executado como Administrador!
-    echo Clique com o botao direito e selecione "Executar como administrador"
+    echo Clique com o botão direito e selecione "Executar como administrador"
     pause
     exit /b 1
 )
 
 REM Define o diretório do projeto
-set "PROJECT_ROOT=%CD%"
-echo Diretório atual: %PROJECT_ROOT%
+set "PROJECT_ROOT=C:\Users\app\Documents\Sistema-Pedidos\sistemapedidosproducao-main"
+cd /d "%PROJECT_ROOT%"
+echo Diretório atual: %CD%
 
 REM Verifica se as pastas existem
 if not exist "backend" (
-    echo Erro: Pasta backend não encontrada em %PROJECT_ROOT%
+    echo Erro: Pasta backend não encontrada em %CD%
     echo Certifique-se de que o script está na pasta raiz do projeto
     pause
     exit /b 1
 )
 
 if not exist "frontend" (
-    echo Erro: Pasta frontend não encontrada em %PROJECT_ROOT%
+    echo Erro: Pasta frontend não encontrada em %CD%
     echo Certifique-se de que o script está na pasta raiz do projeto
     pause
     exit /b 1
