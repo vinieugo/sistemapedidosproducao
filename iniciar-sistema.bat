@@ -13,7 +13,7 @@ if %errorLevel% neq 0 (
 )
 
 REM Define o diretório do projeto
-set "PROJECT_ROOT=C:\Users\app\Documents\Sistema-Pedidos\sistemapedidosproducao-main"
+set "PROJECT_ROOT=%~dp0"
 cd /d "%PROJECT_ROOT%"
 echo Diretório atual: %CD%
 
