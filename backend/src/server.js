@@ -15,12 +15,6 @@ app.use(cors({
 
 app.use(express.json());
 
-// Middleware para logging
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
-  next();
-});
-
 // Rota para favicon.ico
 app.get('/favicon.ico', (req, res) => {
   res.status(204).end(); // No Content
@@ -91,12 +85,8 @@ app.get('/api/pedidos', async (req, res) => {
       pages: Math.ceil(total / limit)
     });
   } catch (error) {
-    console.error('Erro detalhado ao buscar pedidos:', error);
-    res.status(500).json({ 
-      error: 'Erro ao buscar pedidos',
-      details: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-    });
+    console.error(error);
+    res.status(500).json({ error: 'Erro ao buscar pedidos' });
   }
 });
 
@@ -141,11 +131,7 @@ app.post('/api/pedidos', async (req, res) => {
     res.status(201).json(pedido);
   } catch (error) {
     console.error('Erro detalhado ao criar pedido:', error);
-    res.status(500).json({ 
-      error: 'Erro ao criar pedido',
-      details: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-    });
+    res.status(500).json({ error: `Erro ao criar pedido: ${error.message}` });
   }
 });
 
@@ -248,59 +234,11 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Erro interno do servidor' });
 });
 
+// Garantir que o servidor escute no IP e porta corretos
 const PORT = process.env.PORT || 8081;
-const HOST = process.env.HOST || 'localhost';
+const HOST = process.env.HOST || '192.168.5.3';
 
-// Função para testar a conexão com o banco de dados
-async function testDatabaseConnection() {
-  try {
-    console.log('Tentando conectar ao banco de dados...');
-    console.log('URL do banco:', process.env.DATABASE_URL);
-    await prisma.$connect();
-    console.log('Conexão com o banco de dados estabelecida com sucesso!');
-  } catch (error) {
-    console.error('Erro ao conectar com o banco de dados:', error);
-    process.exit(1);
-  }
-}
-
-// Função para iniciar o servidor
-async function startServer() {
-  try {
-    // Testa a conexão com o banco de dados
-    await testDatabaseConnection();
-
-    // Inicia o servidor
-    const server = app.listen(PORT, HOST, () => {
-      console.log(`Servidor rodando em http://${HOST}:${PORT}`);
-      // Notifica o PM2 que o servidor está pronto
-      if (process.send) {
-        process.send('ready');
-      }
-    });
-
-    // Tratamento de erros do servidor
-    server.on('error', (error) => {
-      console.error('Erro no servidor:', error);
-      process.exit(1);
-    });
-
-    // Tratamento de erros não capturados
-    process.on('uncaughtException', (error) => {
-      console.error('Erro não capturado:', error);
-      process.exit(1);
-    });
-
-    process.on('unhandledRejection', (error) => {
-      console.error('Promessa rejeitada não tratada:', error);
-      process.exit(1);
-    });
-
-  } catch (error) {
-    console.error('Erro ao iniciar o servidor:', error);
-    process.exit(1);
-  }
-}
-
-// Inicia o servidor
-startServer(); 
+// Iniciar o servidor
+app.listen(PORT, HOST, () => {
+  console.log(`Servidor rodando em http://${HOST}:${PORT}`);
+}); 
