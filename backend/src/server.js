@@ -254,6 +254,8 @@ const HOST = process.env.HOST || 'localhost';
 // Função para testar a conexão com o banco de dados
 async function testDatabaseConnection() {
   try {
+    console.log('Tentando conectar ao banco de dados...');
+    console.log('URL do banco:', process.env.DATABASE_URL);
     await prisma.$connect();
     console.log('Conexão com o banco de dados estabelecida com sucesso!');
   } catch (error) {
@@ -262,9 +264,43 @@ async function testDatabaseConnection() {
   }
 }
 
-// Iniciar o servidor após testar a conexão
-testDatabaseConnection().then(() => {
-  app.listen(PORT, HOST, () => {
-    console.log(`Servidor rodando em http://${HOST}:${PORT}`);
-  });
-}); 
+// Função para iniciar o servidor
+async function startServer() {
+  try {
+    // Testa a conexão com o banco de dados
+    await testDatabaseConnection();
+
+    // Inicia o servidor
+    const server = app.listen(PORT, HOST, () => {
+      console.log(`Servidor rodando em http://${HOST}:${PORT}`);
+      // Notifica o PM2 que o servidor está pronto
+      if (process.send) {
+        process.send('ready');
+      }
+    });
+
+    // Tratamento de erros do servidor
+    server.on('error', (error) => {
+      console.error('Erro no servidor:', error);
+      process.exit(1);
+    });
+
+    // Tratamento de erros não capturados
+    process.on('uncaughtException', (error) => {
+      console.error('Erro não capturado:', error);
+      process.exit(1);
+    });
+
+    process.on('unhandledRejection', (error) => {
+      console.error('Promessa rejeitada não tratada:', error);
+      process.exit(1);
+    });
+
+  } catch (error) {
+    console.error('Erro ao iniciar o servidor:', error);
+    process.exit(1);
+  }
+}
+
+// Inicia o servidor
+startServer(); 
